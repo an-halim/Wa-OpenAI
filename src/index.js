@@ -13,11 +13,11 @@ const {
   proto,
   MessageType,
 } = require("@adiwajshing/baileys");
-const { state, saveState } = useSingleFileAuthState(`auth.json`);
 const pino = require("pino");
 const { Boom } = require("@hapi/boom");
 const chalk = require("chalk");
 const { Configuration, OpenAIApi } = require("openai");
+const fs = require("fs");
 
 const _color = (text, color) => {
   return !color ? chalk.green(text) : chalk.keyword(color)(text);
@@ -29,8 +29,10 @@ const store = makeInMemoryStore({
 });
 
 async function connectWA() {
+  const { state, saveState } = useSingleFileAuthState('auth_info.json');
   const { version, isLatest } = await fetchLatestBaileysVersion();
   console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
+  console.log("Connecting to WhatsApp...");
 
   const client = waOpenAI({
     logger: pino({ level: "silent" }),
@@ -47,9 +49,10 @@ async function connectWA() {
       if (msg.key.remoteJid === "status@broadcast") return;
       if (msg.key.fromMe) return;
 
+      
       const pushname = msg.pushname || msg.key.participant || "Unknown";
       const number = msg.key.remoteJid;
-      const message = msg.message.extendedTextMessage.text;
+      const message = msg.message?.extendedTextMessage?.text || msg.message?.conversation;
       let slicedMessage =
         message.length > 30 ? `${message.substring(0, 30)}...` : message;
 
@@ -62,6 +65,7 @@ async function connectWA() {
       );
       const likeEmoji = "👍";
       const readEmoji = "👀";
+      const cancleEmoji = "❌";
 
 
       await client.sendMessage(number, {
@@ -73,9 +77,9 @@ async function connectWA() {
 
       try {
         //  openai
-        const keyopenai = "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";
+        const keyopenai = ['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', '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'];
         const configuration = new Configuration({
-          apiKey: keyopenai,
+          apiKey: keyopenai[Math.floor(Math.random() * keyopenai.length)],
         });
         const openai = new OpenAIApi(configuration);
 
@@ -113,6 +117,12 @@ async function connectWA() {
         );
       } catch (err) {
         console.log(err);
+        await client.sendMessage(number, {
+          react: {
+            text: cancleEmoji, // use an empty string to remove the reaction
+            key: msg.key,
+          },
+        });
         client.sendMessage(
           number,
           { text: "Error, Please Try Again Later" },
@@ -143,7 +153,8 @@ async function connectWA() {
       let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
       if (reason === DisconnectReason.badSession) {
         console.log(`Bad Session File, Please Delete Session and Scan Again`);
-        process.exit();
+        fs.unlinkSync(`auth.json`);
+        connectWA();
       } else if (reason === DisconnectReason.connectionClosed) {
         console.log("Connection closed, reconnecting....");
         connectWA();
@@ -159,7 +170,8 @@ async function connectWA() {
         console.log(
           `Device Logged Out, Please Delete Session file and Scan Again.`
         );
-        process.exit();
+        fs.unlinkSync(`auth.json`);
+        connectWA();
       } else if (reason === DisconnectReason.restartRequired) {
         console.log("Restart Required, Restarting...");
         connectWA();
