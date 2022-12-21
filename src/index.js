@@ -18,6 +18,9 @@ const { Boom } = require("@hapi/boom");
 const chalk = require("chalk");
 const { Configuration, OpenAIApi } = require("openai");
 const fs = require("fs");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const _color = (text, color) => {
   return !color ? chalk.green(text) : chalk.keyword(color)(text);
@@ -77,9 +80,9 @@ async function connectWA() {
 
       try {
         //  openai
-        const keyopenai = ['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', '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'];
+        const keyopenai = process.env.OPENAI_API_KEY;
         const configuration = new Configuration({
-          apiKey: keyopenai[Math.floor(Math.random() * keyopenai.length)],
+          apiKey: keyopenai,
         });
         const openai = new OpenAIApi(configuration);
 
