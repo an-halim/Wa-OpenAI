@@ -18,6 +18,7 @@ const { Boom } = require("@hapi/boom");
 const chalk = require("chalk");
 const { Configuration, OpenAIApi } = require("openai");
 const fs = require("fs");
+const db = require("./db");
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -36,6 +37,14 @@ async function connectWA() {
   const { version, isLatest } = await fetchLatestBaileysVersion();
   console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
   console.log("Connecting to WhatsApp...");
+
+  try {
+    console.log("Authenticating database...");
+    await db.authenticate();
+    console.log("Database connected...");
+  } catch (err) {
+    console.log("Unable to connect to the database:", err);
+  }
 
   const client = waOpenAI({
     logger: pino({ level: "silent" }),
