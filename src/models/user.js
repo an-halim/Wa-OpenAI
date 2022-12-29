@@ -21,6 +21,7 @@ const User = db.define("user", {
   },
   phone: {
     type: sequelize.DataTypes.STRING,
+    unique: true,
     allowNull: false,
   },
   role: {
@@ -34,11 +35,11 @@ const User = db.define("user", {
   },
   token: {
     type: sequelize.DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
   otp: {
     type: sequelize.DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
 });
 

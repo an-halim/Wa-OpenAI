@@ -16,9 +16,14 @@ const {
 const pino = require("pino");
 const { Boom } = require("@hapi/boom");
 const chalk = require("chalk");
-const { Configuration, OpenAIApi } = require("openai");
 const fs = require("fs");
 const db = require("./db");
+const SyncModels = require("./models/SyncModels");
+const user = require("./models/user");
+const logs = require("./models/logs");
+const openAiText = require("./openAI/text");
+const openAiImage = require("./openAI/image");
+
 const dotenv = require("dotenv");
 
 dotenv.config();
@@ -32,8 +37,10 @@ const store = makeInMemoryStore({
   logger: pino().child({ level: "silent", stream: "store" }),
 });
 
+const logger = pino().child({ level: "silent", stream: "logger" });
+
 async function connectWA() {
-  const { state, saveState } = useSingleFileAuthState('auth_info.json');
+  const { state, saveState } = useSingleFileAuthState("auth_info.json");
   const { version, isLatest } = await fetchLatestBaileysVersion();
   console.log(`using WA v${version.join(".")}, isLatest: ${isLatest}`);
   console.log("Connecting to WhatsApp...");
@@ -41,6 +48,18 @@ async function connectWA() {
   try {
     console.log("Authenticating database...");
     await db.authenticate();
+    await SyncModels();
+    // fake data
+    await user.create({
+      name: "John Doe",
+      username: "johndoe",
+      password: "123456",
+      phone: "6281234567890",
+      role: "admin",
+      status: "active",
+      token: "123456",
+      otp: "123456",
+    });
     console.log("Database connected...");
   } catch (err) {
     console.log("Unable to connect to the database:", err);
@@ -55,16 +74,48 @@ async function connectWA() {
 
   store.bind(client.ev);
 
+  client.ev.on("call", (call) => {
+    console.log("CALL RECEIVED", call);
+    client.sendMessage(call[0].from, {
+      text: "Please don't call me, I'm busy right now.",
+    });
+  });
+
   client.ev.on("messages.upsert", async (chatUpdate) => {
     try {
       const msg = chatUpdate.messages[0];
       if (msg.key.remoteJid === "status@broadcast") return;
       if (msg.key.fromMe) return;
 
-      
       const pushname = msg.pushname || msg.key.participant || "Unknown";
       const number = msg.key.remoteJid;
-      const message = msg.message?.extendedTextMessage?.text || msg.message?.conversation;
+      const checkUser = await user.findOne({
+        where: {
+          phone: number,
+        },
+      });
+      if (!checkUser && number.split("@")[0] !== "6285647847468") {
+        await client.sendMessage(number, {
+          text: `Hi, Please register first to use this bot.\n\nhttps://wa.anhalim.tech`,
+        });
+        return;
+      }
+
+      const message =
+        msg.message?.extendedTextMessage?.text ||
+        msg.message?.conversation ||
+        msg?.message?.buttonsResponseMessage?.selectedButtonId;
+
+      const keywordGambar = [
+        "gambar",
+        "image",
+        "foto",
+        "photo",
+        "pic",
+        "img",
+        "picture",
+      ];
+
       let slicedMessage =
         message.length > 30 ? `${message.substring(0, 30)}...` : message;
 
@@ -75,10 +126,13 @@ async function connectWA() {
         chalk.green(pushname),
         chalk.yellow(`[ ${number} ]`)
       );
+      await logs.create({
+        from: number,
+        content: slicedMessage,
+      });
       const likeEmoji = "👍";
       const readEmoji = "👀";
       const cancleEmoji = "❌";
-
 
       await client.sendMessage(number, {
         react: {
@@ -88,33 +142,68 @@ async function connectWA() {
       });
 
       try {
-        //  openai
-        const keyopenai = process.env.OPENAI_API_KEY;
-        const configuration = new Configuration({
-          apiKey: keyopenai,
-        });
-        const openai = new OpenAIApi(configuration);
+        if (
+          keywordGambar.some((word) => message.toLowerCase().includes(word))
+        ) {
+          const response = await openAiImage(message);
+          console.log(response);
+          if (!response.data.choices[0].text) {
+            throw new Error("No response from OpenAI");
+          }
+          const image = response.data.data[0].url;
 
-        const response = await openai.createCompletion({
-          model: "text-davinci-003",
-          prompt: message,
-          temperature: 0.3,
-          max_tokens: 2000,
-          top_p: 1.0,
-          frequency_penalty: 0.0,
-          presence_penalty: 0.0,
-        });
-        await client.sendMessage(number, {
-          react: {
-            text: likeEmoji, // use an empty string to remove the reaction
-            key: msg.key,
+          // send image from url
+          await client.sendMessage(number, {
+            url: image,
+          });
+        } else {
+          //  openai
+          const response = await openAiText(message);
+          if (!response.data.choices[0].text) {
+            throw new Error("No response from OpenAI");
+          }
+          await client.sendMessage(number, {
+            react: {
+              text: likeEmoji, // use an empty string to remove the reaction
+              key: msg.key,
+            },
+          });
+          client.sendMessage(
+            number,
+            { text: response.data.choices[0].text },
+            { quoted: msg }
+          );
+          // send a buttons message!
+          const buttons = [
+            {
+              buttonId: message,
+              buttonText: { displayText: "Re-generate" },
+              type: 1,
+            },
+          ];
+
+          const buttonMessage = {
+            text: "Regenerate response if you want",
+            footer: "TruemintBOT",
+            buttons: buttons,
+            headerType: 1,
+          };
+
+          await client.sendMessage(number, buttonMessage);
+        }
+
+        // update user token quota
+        await user.update(
+          {
+            token: checkUser.token - 1,
           },
-        });
-        client.sendMessage(
-          number,
-          { text: response.data.choices[0].text },
-          { quoted: msg }
+          {
+            where: {
+              phone: number,
+            },
+          }
         );
+        await client.readMessages(number, { read: true });
 
         // logs for succes reply
         console.log(
@@ -165,7 +254,7 @@ async function connectWA() {
       let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
       if (reason === DisconnectReason.badSession) {
         console.log(`Bad Session File, Please Delete Session and Scan Again`);
-        fs.unlinkSync(`auth.json`);
+        fs.unlinkSync(`auth_info.json`);
         connectWA();
       } else if (reason === DisconnectReason.connectionClosed) {
         console.log("Connection closed, reconnecting....");
@@ -182,7 +271,7 @@ async function connectWA() {
         console.log(
           `Device Logged Out, Please Delete Session file and Scan Again.`
         );
-        fs.unlinkSync(`auth.json`);
+        fs.unlinkSync(`auth_info.json`);
         connectWA();
       } else if (reason === DisconnectReason.restartRequired) {
         console.log("Restart Required, Restarting...");
@@ -204,4 +293,4 @@ async function connectWA() {
   return client;
 }
 
-connectWA();
+module.exports = connectWA;
