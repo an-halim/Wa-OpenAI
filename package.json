@@ -7,7 +7,7 @@
     "build": "cd fe && npm run build",
     "server": "node ./src/server.js",
     "client": "cd fe && npm run start",
-    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "concurrently \"npm run server\"",
     "dev": "node server/dist/app.js"
   },
   "keywords": [

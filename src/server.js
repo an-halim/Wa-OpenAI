@@ -31,10 +31,6 @@ async function startAPI() {
   app.use(express.urlencoded({ extended: true }));
   app.use('/api', router);
 
-  app.get("/", (req, res) => {
-    res.send("Hello World!");
-  });
-
   server.listen(5000, () => {
     console.log("Example app listening on port 3000!");
   });
