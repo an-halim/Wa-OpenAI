@@ -150,9 +150,10 @@ async function connectWA() {
           if (!response.data.choices[0].text) {
             throw new Error("No response from OpenAI");
           }
-          const image = response.data.data[0].url;
+          const image = response.data?.data[0]?.url;
           console.log(image);
           console.log(response.data.data)
+          console.log(response.data)
 
           // send image from url
           await client.sendMessage(number, {
@@ -194,17 +195,17 @@ async function connectWA() {
           await client.sendMessage(number, buttonMessage);
         }
 
-        // update user token quota
-        await user.update(
-          {
-            token: checkUser.token - 1,
-          },
-          {
-            where: {
-              phone: number,
-            },
-          }
-        );
+        // // update user token quota
+        // await user.update(
+        //   {
+        //     token: checkUser.token - 1,
+        //   },
+        //   {
+        //     where: {
+        //       phone: number,
+        //     },
+        //   }
+        // );
         await client.readMessages(number, { read: true });
 
         // logs for succes reply
