@@ -4,10 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cd fe && npm run build",
     "server": "node ./src/server.js",
     "client": "cd fe && npm run start",
-    "start": "concurrently \"npm run server\"",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
     "dev": "node server/dist/app.js"
   },
   "keywords": [

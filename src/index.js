@@ -151,6 +151,8 @@ async function connectWA() {
             throw new Error("No response from OpenAI");
           }
           const image = response.data.data[0].url;
+          console.log(image);
+          console.log(response.data.data)
 
           // send image from url
           await client.sendMessage(number, {
