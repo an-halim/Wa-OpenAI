@@ -31,8 +31,8 @@ async function startAPI() {
   app.use(express.urlencoded({ extended: true }));
   app.use('/api', router);
 
-  server.listen(5000, () => {
-    console.log("Example app listening on port 3000!");
+  server.listen(process.env.PORT || 5000, () => {
+    console.log(`App listening on port ${process.env.PORT || 5000}!`);
   });
 }
 
