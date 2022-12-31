@@ -1,41 +1,45 @@
 {
-  "name": "openai-wa",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "server": "node ./src/server.js",
-    "client": "cd fe && npm run start",
-    "start": "concurrently \"npm run server\" \"npm run client\"",
-    "dev": "node server/dist/app.js"
-  },
-  "keywords": [
-    "nodejs",
-    "openai",
-    "chatgpt",
-    "express",
-    "socket.io",
-    "mysqql"
-  ],
-  "author": "an-halim",
-  "license": "MIT",
+  "name": "fe",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "@adiwajshing/baileys": "^4.4.0",
-    "@adiwajshing/keyed-db": "^0.2.4",
-    "@hapi/boom": "^10.0.0",
-    "chalk": "4.1.2",
-    "concurrently": "^7.6.0",
-    "dotenv": "^16.0.3",
-    "express": "^4.18.2",
-    "figlet": "^1.5.2",
-    "link-preview-js": "^3.0.4",
-    "mysql2": "^2.3.3",
-    "nanoid": "2.1.11",
-    "openai": "^3.1.0",
-    "pino": "^8.8.0",
-    "react-router-dom": "^6.6.1",
-    "sequelize": "^6.28.0",
-    "socket.io": "^4.5.4",
-    "uuid": "^9.0.0"
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.41.2",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "dev": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.13",
+    "postcss": "^8.4.20",
+    "tailwindcss": "^3.2.4"
   }
 }
