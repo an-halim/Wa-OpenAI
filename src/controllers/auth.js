@@ -10,30 +10,23 @@ const auth = {
       User.findOne({
         where: {
           [Op.and]: [
-            phone,
-            password,
+            {phone},
+            {password},
           ]
         }
       }).then((user) => {
         if (user) {
-          const token = 500;
-          user.update({
-            token: token
-          }).then((user) => {
-            res.status(200).json({
-              message: 'Login success',
-              data: {
-                user: user,
-                token: token
-              }
+          if (user.status === 'inactive') {
+            return res.status(400).json({
+              message: 'User not active',
+              data: {}
             });
-          }).catch((error) => {
-            res.status(500).json({
-              message: 'Login failed',
-              data: {
-                error: error
-              }
-            });
+          }
+          res.status(200).json({
+            message: 'Login success',
+            data: {
+              user: user
+            }
           });
         } else {
           res.status(404).json({
@@ -42,6 +35,7 @@ const auth = {
           });
         }
       }).catch((error) => {
+        console.log(error)
         res.status(500).json({
           message: 'Login failed',
           data: {
@@ -50,6 +44,7 @@ const auth = {
         });
       });
     } catch (error) {
+      console.log(error)
       res.status(500).json({
         message: 'Login failed',
         data: {
@@ -60,12 +55,21 @@ const auth = {
   },
   register: async (req, res) => {
     const { name, username, password, phone } = req.body;
-    console.log(req.body);
     const role = 'user';
     const status = 'inactive';
-    const id = nanoid();
-    console.log(id);
+    const otp = nanoid();
+    const token = 500;
     try {
+      let [result] = await global.client.onWhatsApp(phone);
+      if (!result?.exists) {
+        res.status(400).json({
+          message: 'Register failed',
+          data: {
+            error: 'Phone number not valid'
+          }
+        });
+        return;
+      }
       User.create({
         name: name,
         username: username,
@@ -73,8 +77,13 @@ const auth = {
         phone: phone,
         role: role,
         status: status,
-        otp: id,
-      }).then((user) => {
+        otp: otp,
+        token: token
+      }).then(async (user) => {
+        let ms = await global.client.sendMessage( phone + "@s.whatsapp.net", {
+          text: `Your OTP is ${otp}`
+        });
+        console.log(ms);                             
         res.status(200).json({
           message: 'Register success',
           data: {
@@ -82,8 +91,7 @@ const auth = {
           }
         });
       }).catch((error) => {
-        console.log(error);
-        res.status(500).json({
+        res.status(400).json({
           message: 'Register failed',
           data: {
             error: error
@@ -91,7 +99,7 @@ const auth = {
         });
       });
     } catch (error) {
-      console.log(error);
+      console.log(error)
       res.status(500).json({
         message: 'Register failed',
         data: {
@@ -101,11 +109,11 @@ const auth = {
     }
   },
   verify: async (req, res) => {
-    const { token } = req.body;
+    const { code } = req.query;
     try {
       User.findOne({
         where: {
-          otp: token
+          otp: code
         }
       }).then((user) => {
         if (user) {

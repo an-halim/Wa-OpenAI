@@ -38,6 +38,8 @@ const store = makeInMemoryStore({
 });
 
 const logger = pino().child({ level: "silent", stream: "logger" });
+const authFile = "auth.json"
+
 
 async function connectWA() {
   const { state, saveState } = useSingleFileAuthState("auth_info.json");
@@ -87,19 +89,19 @@ async function connectWA() {
       if (msg.key.remoteJid === "status@broadcast") return;
       if (msg.key.fromMe) return;
 
-      const pushname = msg.pushname || msg.key.participant || "Unknown";
+      const pushname = msg.pushName || msg.key.participant || "Unknown";
       const number = msg.key.remoteJid;
       const checkUser = await user.findOne({
         where: {
           phone: number,
         },
       });
-      if (!checkUser && number.split("@")[0] !== "6285647847468") {
-        await client.sendMessage(number, {
-          text: `Hi, Please register first to use this bot.\n\nhttps://wa.anhalim.tech`,
-        });
-        return;
-      }
+      // if (!checkUser && number.split("@")[0] !== "6285647847468") {
+      //   await client.sendMessage(number, {
+      //     text: `Hi, Please register first to use this bot.\n\nhttps://wa.anhalim.tech`,
+      //   });
+      //   return;
+      // }
 
       const message =
         msg.message?.extendedTextMessage?.text ||
@@ -120,7 +122,7 @@ async function connectWA() {
         message.length > 30 ? `${message.substring(0, 30)}...` : message;
 
       console.log(
-        chalk.black(chalk.bgWhite("[ LOGS ]")),
+        chalk.black(chalk.bgWhite("[ WhatsApp ]")),
         color(slicedMessage, "turquoise"),
         chalk.magenta("From"),
         chalk.green(pushname),
@@ -150,8 +152,14 @@ async function connectWA() {
             throw new Error("No response from OpenAI");
           }
           const image = response.data?.data[0]?.url;
-          console.log(response.data.data);
-          console.log(image);
+          
+          
+          await client.sendMessage(number, {
+            react: {
+              text: likeEmoji, // use an empty string to remove the reaction
+              key: msg.key,
+            },
+          });
 
           // send image from url
           await client.sendMessage(
@@ -167,7 +175,7 @@ async function connectWA() {
         } else {
           //  openai
           const response = await openAiText(message);
-          if (!response.data.choices[0].text) {
+          if (!response?.data?.choices[0]?.text) {
             throw new Error("No response from OpenAI");
           }
           await client.sendMessage(number, {
@@ -200,7 +208,7 @@ async function connectWA() {
           await client.sendMessage(number, buttonMessage);
           // logs for succes reply
           console.log(
-            chalk.black(chalk.bgWhite("[ LOGS ]")),
+            chalk.black(chalk.bgWhite("[ WhatsApp ]")),
             color(
               response.data.choices[0].text.trim().substring(0, 10) + "...",
               "turquoise"
@@ -261,7 +269,7 @@ async function connectWA() {
       let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
       if (reason === DisconnectReason.badSession) {
         console.log(`Bad Session File, Please Delete Session and Scan Again`);
-        fs.unlinkSync(`auth_info.json`);
+        fs.unlinkSync("auth_info.json");
         connectWA();
       } else if (reason === DisconnectReason.connectionClosed) {
         console.log("Connection closed, reconnecting....");
@@ -278,7 +286,7 @@ async function connectWA() {
         console.log(
           `Device Logged Out, Please Delete Session file and Scan Again.`
         );
-        fs.unlinkSync(`auth_info.json`);
+        fs.unlinkSync("auth_info.json");
         connectWA();
       } else if (reason === DisconnectReason.restartRequired) {
         console.log("Restart Required, Restarting...");

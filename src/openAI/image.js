@@ -22,7 +22,7 @@ module.exports = async function openai(message) {
     // return response.data.data[0].url;
     return response;
   } catch (error) {
-    console.log(error);
+    console.log("Error : ", error?.response?.data?.error?.message);
     return error;
   }
 }

@@ -9,7 +9,8 @@ const db = new sequelize("railway", "root", "CuROpuAnCPquCbNIPyT5", {
     min: 0,
     idle: 10000,
   },
+  // disable loging if in production
+  logging: false,
 });
-
 
 module.exports = db;

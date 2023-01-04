@@ -5,7 +5,7 @@ const updateLog = require("./updateLogs");
 module.exports = async function sync() {
   try {
     await logs.sync();
-    await user.sync({force: true});
+    await user.sync();
     await updateLog.sync();
   } catch (err) {
     console.log(err);
