@@ -49,19 +49,19 @@ async function connectWA() {
 
   try {
     console.log("Authenticating database...");
-    await db.authenticate();
-    await SyncModels();
-    // fake data
-    await user.create({
-      name: "John Doe",
-      username: "johndoe",
-      password: "123456",
-      phone: "6281234567890",
-      role: "admin",
-      status: "active",
-      token: "123456",
-      otp: "123456",
-    });
+    // await db.authenticate();
+    // await SyncModels();
+    // // fake data
+    // await user.create({
+    //   name: "John Doe",
+    //   username: "johndoe",
+    //   password: "123456",
+    //   phone: "6281234567890",
+    //   role: "admin",
+    //   status: "active",
+    //   token: "123456",
+    //   otp: "123456",
+    // });
     console.log("Database connected...");
   } catch (err) {
     console.log("Unable to connect to the database:", err);
@@ -91,11 +91,11 @@ async function connectWA() {
 
       const pushname = msg.pushName || msg.key.participant || "Unknown";
       const number = msg.key.remoteJid;
-      const checkUser = await user.findOne({
-        where: {
-          phone: number,
-        },
-      });
+      // const checkUser = await user.findOne({
+      //   where: {
+      //     phone: number,
+      //   },
+      // });
       // if (!checkUser && number.split("@")[0] !== "6285647847468") {
       //   await client.sendMessage(number, {
       //     text: `Hi, Please register first to use this bot.\n\nhttps://wa.anhalim.tech`,
@@ -128,10 +128,10 @@ async function connectWA() {
         chalk.green(pushname),
         chalk.yellow(`[ ${number} ]`)
       );
-      await logs.create({
-        from: number,
-        content: slicedMessage,
-      });
+      // await logs.create({
+      //   from: number,
+      //   content: slicedMessage,
+      // });
       const likeEmoji = "👍";
       const readEmoji = "👀";
       const cancleEmoji = "❌";

@@ -4,7 +4,6 @@ const socketIo = require("socket.io");
 const logger = require("morgan");
 const socket = require("./socket");
 
-
 const app = express();
 const server = require("http").createServer(app);
 const io = socketIo(server);
@@ -18,10 +17,10 @@ async function startAPI() {
   app.use(logger("dev"));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
-  app.use('/api', router);
+  app.use("/api", router);
   app.use("*", (req, res) => {
     res.json({ status: "success", message: "Welcome to the API" });
-  })
+  });
 
   socket(io, global.client);
 
