@@ -72,12 +72,22 @@ export default function TimeLine() {
             </span>
           </h3>
           <time className='block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500'>
-            Released on December 19, 2022
+            Released on March 23rd, 2023
           </time>
           <p className='text-base font-normal text-gray-500 dark:text-gray-400'>
             This is the first version of the web base. It is still in beta, its
             only display update log, next update will be the full version.
           </p>
+          <a
+            href={"/web"}
+            className='inline-flex items-center py-2 px-4 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:outline-none focus:ring-gray-200 focus:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700'>
+            <img
+              width={30}
+              height={30}
+              alt='chat'
+              src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAADaklEQVR4nO2a+2uOYRjHP9jGjJm1XxxCk+NCJEVSyj9Aw2bzkx8soyXllMRPKMnwE4U0yWHI+Uzvi5XktDGHpuQ0pNCwOWy667t6sufZ+77b+7zPvXo/9fyw57qf677u977v67ru6x4kSWI9g4G5wBagErgH1AEf9NTp3TG1yQcGYQnDgY3AI6DF4/mix0v+ANgA5AYxgOnAOeCvwyDza28HCoFJQJbLd1mSmTblwH3H90bXGWBqIgZgfrXTjs7NclkJDO2EzmHAauClQ+9JvY873YAy4Ls6eqr90D2OfRhdBcAz9dEAlMZRPxnAYSn/AawCUvCPVGAt8FN9HpINnaI/UOWYhbEkjnHAc/V9y2PPRUUf4K4UXQMySTz9gBuy4U5HZqaHPIhRcAHoRXCkA5dly6lY9+UafWjcY1+CJxN4KJuMl4yK8cAv4JsCni2MkCdrAvKi+eCSRl6CfSyVbecjNZyhhtXaJ7aRAjyWjSa78OSoGi2IoDDcTu7U2Sccoe9iR3zx3FBmb9QDaQEOJBSh757AR6BRIaIN+VK0B/vZK1vnuAm3STgP+ymQrVvdhK1BZxT2M0a2XnQT1kpokjbbSZOtT9yE7xRw/Nzc4Q7oDnvYZI4Ub90Eb5Sm+zmQUAd0h2IdSLU+DDJBjMvSat3sJqfp0pt9s4RF2E9he+53toS7sZ99stXY3IYMea3PAaco4ShSlE8607umKIaDUlZoca61UO2MrZ6Y4lmzCg02pvGpjsA9LVLjE2q4DPsok21no60mNijgjMQeRsumRrnfqCjVyKtVkgmaLKBGNq2ItUS631HTMiWZoOgtG1q07GMu0xoXfEUKbgLZBDMTIdlQpUF1iHRH9d0UlyeSOCYALxyxJTMeLm+XFDYloEyUCqzTpjZ9VnRmJtyYL8Um3fcDE7eKHLNgCoSL/ehooDq4HWe9ubpGeCX9zbqDHILPB/6dHvISFTAWAZOBHJdjc7ZkxdLjvHv8o5uqKfhMa3V+lkv1r7yd3MkEsa/tyM3d43q/rtr+ZwDwW9Pv9OMm8l+XQe9VSjLV8gPyNDU6jtbrvtHccRwBNikFN3oTyg4Zu0R/5+hQ06T3tUohrCZPBpslshw47nCNrem057nAJq66rOtmLamZdCEqgNf6D4VKzUpXqEYmSUIc+Af+05ebWLVawwAAAABJRU5ErkJggg=='></img>{" "}
+            Chat with bot
+          </a>
         </li>
         <li className='ml-6'>
           <span className='flex absolute -left-3 justify-center items-center w-6 h-6 bg-blue-200 rounded-full ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900'>
